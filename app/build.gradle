@@ -7,7 +7,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "template.app.id"
+        applicationId "ru.frozenpriest.howsday"
         minSdk 21
         targetSdk 32
         versionCode 1
@@ -44,6 +44,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    namespace 'ru.frozenpriest.howsday'
 }
 
 dependencies {
