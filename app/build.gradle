@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "ru.frozenpriest.howsday"
-        minSdk 21
-        targetSdk 32
+        minSdk 25
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -48,6 +48,10 @@ android {
 }
 
 dependencies {
+
+    implementation project(':commons-di-koin')
+
+    implementation "io.insert-koin:koin-android:3.1.6"
 
     implementation "androidx.core:core-ktx:$rootProject.ext.versions.ktxCore"
     implementation "androidx.appcompat:appcompat:$rootProject.ext.versions.appCompat"
