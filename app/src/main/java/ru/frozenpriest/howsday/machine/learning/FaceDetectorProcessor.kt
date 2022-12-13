@@ -46,6 +46,5 @@ class FaceDetectorProcessor {
                 Log.e("Camera", "Error detecting face", e)
                 continuation.resumeWithException(e)
             }
-            .addOnCompleteListener { image.close() }
     }
 }
