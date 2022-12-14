@@ -3,6 +3,7 @@ package ru.frozenpriest.howsday.ui.main
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,7 +23,7 @@ class MainViewModel(
 
     fun imageTaken(image: ImageProxy) {
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             stateFlow.update {
                 MainState.Loading
             }
@@ -51,9 +52,18 @@ class MainViewModel(
             }
         }
     }
+
+    fun permissionGranted(granted: Boolean) {
+
+        when (granted) {
+            true -> stateFlow.compareAndSet(MainState.NoPermission, MainState.Normal)
+            else -> stateFlow.update { MainState.NoPermission }
+        }
+    }
 }
 
 sealed class MainState {
+    object NoPermission : MainState()
     object Normal : MainState()
     object Loading : MainState()
     data class Result(val classificationResult: ClassificationResult) : MainState()
