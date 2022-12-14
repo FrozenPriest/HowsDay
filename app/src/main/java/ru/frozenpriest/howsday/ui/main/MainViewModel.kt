@@ -16,8 +16,8 @@ class MainViewModel(
 
         viewModelScope.launch {
             val result = faceDetectorProcessor.processImageProxy(image)
-            val result2 = faceClassifier.classifyImage(image)
-            println("$result, $result2")
+            val result2 = faceClassifier.classifyImage(result.first())
+            println("$result,\n $result2")
 
             image.close()
         }

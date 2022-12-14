@@ -1,42 +1,26 @@
 package ru.frozenpriest.howsday.machine.learning
 
-import androidx.annotation.OptIn
-import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.core.ImageProxy
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.label.ImageLabeler
-import com.google.mlkit.vision.label.ImageLabeling
-import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import com.google.mlkit.vision.face.Face
+import ru.frozenpriest.howsday.data.model.ClassifierModifiers
+import ru.frozenpriest.howsday.data.model.ClassifierModifiersProvider
+import ru.frozenpriest.howsday.data.model.HumanState
 
-class FaceClassifier {
+class FaceClassifier(
+    private val modifiersProvider: ClassifierModifiersProvider
+) {
+    suspend fun classifyImage(face: Face): HumanState {
 
-    private val imageLabeler: ImageLabeler
+        val smilingProbability = face.smilingProbability
 
-    init {
-
-        val imageLabelingOptions = ImageLabelerOptions.Builder()
-            .setConfidenceThreshold(0.7f)
-            .build()
-
-        imageLabeler = ImageLabeling.getClient(imageLabelingOptions)
+        return when {
+            smilingProbability == null || smilingProbability < -0.01 -> HumanState.UNKNOWN
+            smilingProbability <= 0.01 + modifiers.sad -> HumanState.SAD
+            smilingProbability < 0.5 + modifiers.normal -> HumanState.NORMAL
+            smilingProbability >= 0.7 - modifiers.happy -> HumanState.HAPPY
+            else -> HumanState.ANGRY
+        }
     }
 
-    @OptIn(ExperimentalGetImage::class)
-    suspend fun classifyImage(imageProxy: ImageProxy) = suspendCoroutine { continuation ->
-        val inputImage = InputImage.fromMediaImage(imageProxy.image!!, 0)
-
-        imageLabeler.process(inputImage)
-            .addOnCanceledListener {
-                continuation.resume(null)
-            }
-            .addOnSuccessListener {
-                continuation.resume(it)
-            }
-            .addOnFailureListener {
-                continuation.resumeWithException(it)
-            }
-    }
+    private inline val modifiers: ClassifierModifiers
+        get() = modifiersProvider.modifiers
 }
