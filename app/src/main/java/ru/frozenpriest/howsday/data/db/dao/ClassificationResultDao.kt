@@ -13,6 +13,9 @@ interface ClassificationResultDao {
     @Query("SELECT * FROM classification_results ORDER BY timestamp DESC")
     fun getAll(): Flow<List<ClassificationResultEntity>>
 
+    @Query("SELECT * FROM classification_results ORDER BY timestamp DESC")
+    fun getAllSync(): List<ClassificationResultEntity>
+
     @Insert
     suspend fun insert(entity: ClassificationResultEntity)
 

@@ -1,26 +1,26 @@
 package ru.frozenpriest.howsday.machine.learning
 
 import com.google.mlkit.vision.face.Face
-import ru.frozenpriest.howsday.data.model.ClassifierModifiers
-import ru.frozenpriest.howsday.data.model.ClassifierModifiersProvider
+import ru.frozenpriest.howsday.data.LocalRepository
 import ru.frozenpriest.howsday.data.model.HumanState
 
 class FaceClassifier(
-    private val modifiersProvider: ClassifierModifiersProvider
+    private val localRepository: LocalRepository
 ) {
     suspend fun classifyImage(face: Face): HumanState {
-
         val smilingProbability = face.smilingProbability
 
-        return when {
-            smilingProbability == null || smilingProbability < -0.01 -> HumanState.UNKNOWN
-            smilingProbability <= 0.01 + modifiers.sad -> HumanState.SAD
-            smilingProbability < 0.5 + modifiers.normal -> HumanState.NORMAL
-            smilingProbability >= 0.7 - modifiers.happy -> HumanState.HAPPY
-            else -> HumanState.ANGRY
-        }
-    }
+        val localData = localRepository.getResultsSync()
 
-    private inline val modifiers: ClassifierModifiers
-        get() = modifiersProvider.modifiers
+        return localData.find {
+            it.face.smilingProbability == face.smilingProbability
+        }?.result
+            ?: when {
+                smilingProbability == null || smilingProbability < -0.01 -> HumanState.UNKNOWN
+                smilingProbability <= 0.01 -> HumanState.SAD
+                smilingProbability < 0.5 -> HumanState.NORMAL
+                smilingProbability >= 0.7 -> HumanState.HAPPY
+                else -> HumanState.ANGRY
+            }
+    }
 }

@@ -1,7 +1,9 @@
 package ru.frozenpriest.howsday.data
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import ru.frozenpriest.howsday.data.db.dao.ClassificationResultDao
 import ru.frozenpriest.howsday.data.db.entity.ClassificationResultEntity
 import ru.frozenpriest.howsday.data.model.ClassificationResult
@@ -15,6 +17,12 @@ class LocalRepository(
             results.map {
                 ClassificationResult(it.timestamp, it.face, it.result)
             }
+        }
+    }
+
+    suspend fun getResultsSync(): List<ClassificationResult> = withContext(Dispatchers.IO) {
+        dao.getAllSync().map {
+            ClassificationResult(it.timestamp, it.face, it.result)
         }
     }
 

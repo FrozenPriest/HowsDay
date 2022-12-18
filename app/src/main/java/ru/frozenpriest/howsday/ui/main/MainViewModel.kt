@@ -40,8 +40,6 @@ class MainViewModel(
                     state
                 )
 
-                localRepository.insertResult(classificationResult)
-
                 stateFlow.update {
                     MainState.Result(classificationResult)
                 }
@@ -58,6 +56,22 @@ class MainViewModel(
         when (granted) {
             true -> stateFlow.compareAndSet(MainState.NoPermission, MainState.Normal)
             else -> stateFlow.update { MainState.NoPermission }
+        }
+    }
+
+    fun saveItem(classificationResult: ClassificationResult) {
+        viewModelScope.launch {
+            localRepository.insertResult(classificationResult)
+
+            stateFlow.update {
+                MainState.Normal
+            }
+        }
+    }
+
+    fun cancel() {
+        stateFlow.update {
+            MainState.Normal
         }
     }
 }

@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Hows day</string>
-    <string name="result">You are %1$s</string>
+    <string name="result">You are</string>
 </resources>

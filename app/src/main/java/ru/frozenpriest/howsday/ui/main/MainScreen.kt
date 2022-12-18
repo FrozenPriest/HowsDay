@@ -10,6 +10,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -21,10 +22,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Button
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -53,6 +57,10 @@ import com.google.android.gms.tasks.TaskExecutors
 import com.google.common.util.concurrent.ListenableFuture
 import org.koin.androidx.compose.koinViewModel
 import ru.frozenpriest.howsday.R
+import ru.frozenpriest.howsday.data.model.ClassificationResult
+import ru.frozenpriest.howsday.data.model.HumanState
+import ru.frozenpriest.howsday.data.model.name
+import ru.frozenpriest.howsday.ui.main.MainState.Result
 
 @Composable
 fun MainScreen() {
@@ -100,8 +108,16 @@ fun MainScreen() {
                 }
             )
 
-            if (state is MainState.Result) {
-                ResultCard(state)
+            if (state is Result) {
+                ResultCard(
+                    state as Result,
+                    onSaveClicked = {
+                        viewModel.saveItem(it)
+                    },
+                    onCancelledClicked = {
+                        viewModel.cancel()
+                    }
+                )
             }
         } else {
             Column(
@@ -133,8 +149,18 @@ fun MainScreen() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun ResultCard(state: MainState) {
+private fun ResultCard(
+    state: Result,
+    onSaveClicked: (ClassificationResult) -> Unit,
+    onCancelledClicked: () -> Unit,
+) {
+
+    var result by remember {
+        mutableStateOf(state.classificationResult.result)
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
@@ -142,14 +168,59 @@ private fun ResultCard(state: MainState) {
         Card(
             modifier = Modifier.fillMaxWidth(0.8f),
         ) {
-            Text(
-                textAlign = TextAlign.Center,
-                text = stringResource(
-                    id = R.string.result,
-                    (state as MainState.Result).classificationResult.result.name
-                ),
-                style = MaterialTheme.typography.body1,
-            )
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    textAlign = TextAlign.Center,
+                    text = stringResource(
+                        id = R.string.result,
+                    ),
+                    style = MaterialTheme.typography.body1,
+                )
+
+                var expanded by remember {
+                    mutableStateOf(false)
+                }
+                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+                    TextField(
+                        value = result.name(),
+                        readOnly = true,
+                        onValueChange = {}
+                    )
+                    ExposedDropdownMenu(expanded, onDismissRequest = { expanded = false }) {
+                        HumanState.values().forEach {
+                            Text(
+                                text = it.name(),
+                                modifier = Modifier.clickable {
+                                    result = it
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Row {
+                    Button(
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {
+
+                            val classificationResult = ClassificationResult(
+                                timestamp = state.classificationResult.timestamp,
+                                face = state.classificationResult.face,
+                                result = result,
+                            )
+                            onSaveClicked(classificationResult)
+                        }
+                    ) {
+                        Text(text = "Save")
+                    }
+                    Button(
+                        modifier = Modifier.padding(8.dp),
+                        onClick = { onCancelledClicked() }
+                    ) {
+                        Text(text = "Cancel")
+                    }
+                }
+            }
         }
     }
 }
