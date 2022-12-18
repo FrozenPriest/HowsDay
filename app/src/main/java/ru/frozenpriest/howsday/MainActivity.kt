@@ -16,12 +16,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ru.frozenpriest.howsday.theme.HowsDayTheme
 import ru.frozenpriest.howsday.ui.main.MainScreen
 import ru.frozenpriest.howsday.ui.navigation.NavDestination
+import ru.frozenpriest.howsday.ui.statistics.StatisticsScreen
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +34,7 @@ class MainActivity : AppCompatActivity() {
                 val navController = rememberNavController()
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    topBar = { TopBar() }
+                    topBar = { TopBar(navController) }
                 ) { padding ->
                     NavHost(
                         navController = navController,
@@ -42,6 +44,9 @@ class MainActivity : AppCompatActivity() {
                         composable(NavDestination.Main.destination) {
                             MainScreen()
                         }
+                        composable(NavDestination.Statistics.destination) {
+                            StatisticsScreen()
+                        }
                     }
                 }
             }
@@ -49,7 +54,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun TopBar() {
+    fun TopBar(
+        navController: NavController
+    ) {
         TopAppBar(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -60,6 +67,9 @@ class MainActivity : AppCompatActivity() {
 
                 IconButton(
                     onClick = {
+                        navController.navigate(NavDestination.Statistics.destination) {
+                            launchSingleTop = true
+                        }
                     }
                 ) {
                     Icon(

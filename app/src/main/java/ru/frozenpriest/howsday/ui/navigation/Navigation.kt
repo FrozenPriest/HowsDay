@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class NavDestination(val destination: String) {
     object Main : NavDestination("main")
+    object Statistics : NavDestination("statistics")
 }
 
 sealed class BottomBarScreen(
